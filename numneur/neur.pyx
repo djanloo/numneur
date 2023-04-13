@@ -28,6 +28,7 @@ cpdef izhikevich_RK(double [:] I, double a=0.02, double b=0.2,double  c=-65.0, d
 
   cdef double [:] v = np.zeros(N)
   cdef double [:] u = np.zeros(N)
+  cdef list firing_times = []
 
   cdef double k1, k2, k3, k4
 
@@ -38,6 +39,7 @@ cpdef izhikevich_RK(double [:] I, double a=0.02, double b=0.2,double  c=-65.0, d
     if v[i] >= 30.0:
       v[i] = c
       u[i] = u[i] + d
+      firing_times.append(i)
 
     midtime_u = u[i] + a* 0.5*dt*(b*v[i] - u[i])
     fulltime_u = u[i] + a*dt*(b*v[i] - u[i])
@@ -48,12 +50,10 @@ cpdef izhikevich_RK(double [:] I, double a=0.02, double b=0.2,double  c=-65.0, d
     k4 = dt*(mystic_function(v[i] + k3)     - fulltime_u)
 
     v[i+1] = v[i] + k1/3.0 + k2/6.0 + k3/6.0 + k4/3.0 +  dt*I[i]
-
-
     
     u[i+1] = u[i] + a*dt*( b*v[i+1] - u[i])
   
-  return np.array(v), np.array(u)
+  return np.array(v), np.array(u), firing_times
 
 
     
