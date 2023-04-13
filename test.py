@@ -9,8 +9,8 @@ rcParams["font.family"] = "serif"
 fig = plt.figure(constrained_layout=True)
 axs = fig.subplot_mosaic([['V'],["u"], ["I"], ["g"]],
                           gridspec_kw={'height_ratios':[3, 2, 1, 1]}, sharex=True)
-N = 50_000
-dt = 1e-2
+N = 500_000
+dt = 5e-3
 T = np.arange(N)
 t = np.arange(N)*dt
 
@@ -18,6 +18,7 @@ t = np.arange(N)*dt
 chattering = dict(c=-50.0, d=2)
 bursting =   dict(c=-55.0, d=4)
 accomodating = dict(a=0.02, b=1, c=-65, d=2)
+fede_dawn = dict(a=0.0, c=-50, d=0)
 
 # Injected current
 I = np.zeros(N)
@@ -27,9 +28,9 @@ I[N//40:N//5*4] = 10
 v1, recovery1, firing_times = izhiRK(I, dt=dt, **chattering)
 
 # Synapse stuff
-tau = 10
-t_retard = 0.0
-g0 = 1.0
+tau = 5
+t_retard = 10.0
+g0 = 0.5
 Esyn = 0.0
 
 g = np.zeros(len(I))
@@ -50,7 +51,7 @@ axs["V"].plot(t, v1, label="Neuron 1")
 axs["I"].plot(t, I, label="Neuron 1 (injected)")
 
 axs["V"].plot(t, v2, label="Neuron 2")
-axs["I"].plot(t, g*(v2-Esyn), label="Neuron 2 (synaptic)")
+axs["I"].plot(t, -g*(v2-Esyn), label="Neuron 2 (synaptic)")
 
 axs["u"].plot(t, recovery1, label="Neuron1")
 axs["u"].plot(t, recovery2, label="Neuron2")

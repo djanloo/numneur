@@ -92,7 +92,7 @@ def syn_izhikevich(double [:] g, double a=0.02, double b=0.2,double  c=-65.0, do
       u[i] = u[i] + d
       firing_times.append(i)
   
-    v[i+1] = v[i] + dt*( mystic_function(v[i]) - u[i] + g[i]*(v[i] - Esyn))
+    v[i+1] = v[i] + dt*( mystic_function(v[i]) - u[i] - g[i]*(v[i] - Esyn))
     u[i+1] = u[i] + a*dt*( b*v[i] - u[i])
   
   return np.array(v), np.array(u), firing_times
@@ -131,10 +131,10 @@ def syn_izhikevich_RK(double [:] g, double a=0.02, double b=0.2,double  c=-65.0,
     fulltime_u = u[i] + a*dt*(b*v[i] - u[i])
 
     # Runge-Kutta
-    k1 = dt*(mystic_function(v[i])          - u[i]        + g[i]*             (v[i]           - Esyn))
-    k2 = dt*(mystic_function(v[i] + 0.5*k1) - midtime_u   + 0.5*(g[i]+g[i+1])*(v[i] + 0.5*k1  - Esyn))
-    k3 = dt*(mystic_function(v[i] + 0.5*k2) - midtime_u   + 0.5*(g[i]+g[i+1])*(v[i] + 0.5*k2  - Esyn))
-    k4 = dt*(mystic_function(v[i] +     k3) - fulltime_u  + g[i+1]*           (v[i] + k3      - Esyn))
+    k1 = dt*(mystic_function(v[i])          - u[i]        - g[i]*             (v[i]           - Esyn))
+    k2 = dt*(mystic_function(v[i] + 0.5*k1) - midtime_u   - 0.5*(g[i]+g[i+1])*(v[i] + 0.5*k1  - Esyn))
+    k3 = dt*(mystic_function(v[i] + 0.5*k2) - midtime_u   - 0.5*(g[i]+g[i+1])*(v[i] + 0.5*k2  - Esyn))
+    k4 = dt*(mystic_function(v[i] +     k3) - fulltime_u  - g[i+1]*           (v[i] + k3      - Esyn))
 
     v[i+1] = v[i] + k1/3.0 + k2/6.0 + k3/6.0 + k4/3.0
     u[i+1] = u[i] + a*dt*( b*v[i+1] - u[i])
