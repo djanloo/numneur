@@ -10,7 +10,7 @@ fig = plt.figure(constrained_layout=True)
 axs = fig.subplot_mosaic([['V'],["I"], ["g"]],
                           gridspec_kw={'height_ratios':[3, 1, 1]}, sharex=True)
 N = 50_000
-dt = 2e-2
+dt = 3e-2
 T = np.arange(N)
 t = np.arange(N)*dt
 
@@ -23,7 +23,7 @@ I = np.zeros(N)
 I[N//50:N//5*3] = 10
 I[N//5: N//5 + 5000] = -10
 # I = 30*np.sin(t/50)
-v, recovery, firing_times = izhiRK(I, dt=dt, **bursting)
+v, recovery, firing_times = izhiRK(I, dt=dt, **chattering)
 
 axs["V"].plot(t, v, label="RK4")
 axs["I"].plot(t, I, label="injected current")
@@ -36,7 +36,7 @@ for ft in firing_times:
 axs["g"].plot(t, g)
 
 
-v, u, firing_times = izhi(I, dt=dt, **bursting)
+v, u, firing_times = izhi(I, dt=dt, **chattering)
 g = np.zeros(len(I))
 tau = 2
 for ft in firing_times:
