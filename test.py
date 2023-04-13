@@ -36,12 +36,19 @@ for ft in firing_times:
 axs["g"].plot(t, g)
 
 
-v = izhi(I, dt=dt, **bursting)
+v, u, firing_times = izhi(I, dt=dt, **bursting)
+g = np.zeros(len(I))
+tau = 2
+for ft in firing_times:
+    mask = t > ft*dt
+    g[mask] += 10*(t[mask] - ft*dt)/tau*np.exp( -(t[mask]-ft*dt)/tau)
+axs["g"].plot(t, g)
+
 axs["V"].plot(t, v, label="eEuler")
 axs["V"].legend()
 
 axs["V"].set_ylabel("Membrane potential")
 axs["I"].set_ylabel("I")
 axs["g"].set_ylabel("g")
-fig.suptitle("Izhikevich model (chattering pattern)")
+fig.suptitle("Izhikevich model (bursting pattern)")
 plt.show()
