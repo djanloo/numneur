@@ -8,6 +8,8 @@ cython = "*"
 rich = "*"
 line-profiler = "==3.5.1"
 numpy = "*"
+matplotlib = "*"
+seaborn = "*"
 
 [dev-packages]
 

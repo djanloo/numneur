@@ -1,30 +1,30 @@
 .PHONY: generate profile clear
 
 generate:
-	@make clear
-	@python3 -m dummy_pkg.setup
+	# @make clear
+	@python3 -m numneur.setup
 
 profile:
 	@make clear
-	@python3 -m dummy_pkg.setup --profile
+	@python3 -m numneur.setup --profile
 
 notrace:
 	@make clear
-	@python3 -m dummy_pkg.setup --notrace
+	@python3 -m numneur.setup --notrace
 
 hardcore:
 	make clear
-	@python3 -m dummy_pkg.setup --hardcore
+	@python3 -m numneur.setup --hardcore
 
 hardcoreprofile:
 	make clear
-	@python3 -m dummy_pkg.setup --hardcore --profile
+	@python3 -m numneur.setup --hardcore --profile
 
 clear:
 	@echo "Cleaning all.."
-	@rm -f dummy_pkg/*.c
-	@rm -f dummy_pkg/*.so
-	@rm -f dummy_pkg/*.html
-	@rm -R -f dummy_pkg/build
-	@rm -R -f dummy_pkg/__pycache__
+	@rm -f numneur/*.c
+	@rm -f numneur/*.so
+	@rm -f numneur/*.html
+	@rm -R -f numneur/build
+	@rm -R -f numneur/__pycache__
 	@echo "Cleaned."
