@@ -9,7 +9,7 @@ rcParams["font.family"] = "serif"
 fig = plt.figure(constrained_layout=True)
 axs = fig.subplot_mosaic([['V'],["u"], ["I"], ["g"]],
                           gridspec_kw={'height_ratios':[3, 2, 1, 1]}, sharex=True)
-N = 500_000
+N = 50_000
 dt = 5e-3
 T = np.arange(N)
 t = np.arange(N)*dt
@@ -23,6 +23,7 @@ fede_dawn = dict(a=0.0, c=-50, d=0)
 # Injected current
 I = np.zeros(N)
 I[N//40:N//5*4] = 10
+I += np.cumsum(np.random.normal(0,0.1, size=N))
 
 # Computes the potential of the first neuron
 v1, recovery1, firing_times = izhiRK(I, dt=dt, **chattering)
@@ -43,7 +44,7 @@ for ft in firing_times:
 axs["g"].plot(t, g)
 
 # Computes the potential of the second neuron
-v2, recovery2, firing_times = sizi(g, Esyn = Esyn, **bursting)
+v2, recovery2, firing_times = sizi(g,np.random.normal(0,30.0, size=N), Esyn = Esyn, **chattering)
 
 
 # plots
