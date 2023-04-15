@@ -1,8 +1,11 @@
 .PHONY: generate profile clear
 
 generate:
-	# @make clear
 	@python3 -m numneur.setup
+
+force:
+	@make clear
+	@python3 -m numneur.setup --force_build
 
 profile:
 	@make clear

@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--profile', action='store_true')
 parser.add_argument('--notrace', action='store_true')
 parser.add_argument('--hardcore', action='store_true')
+parser.add_argument('--force_build', action='store_true')
 
 args = parser.parse_args()
 
@@ -70,7 +71,7 @@ setup(
                             compiler_directives=cython_compiler_directives,
                             annotate=False),
                             script_args=["build_ext"],
-                            options={"build_ext": {"inplace": True, "force": True}},
+                            options={"build_ext": {"inplace": True, "force": args.force_build}},
                         )
 
 # Sets back working directory to old one
