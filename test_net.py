@@ -10,9 +10,9 @@ dt = 5e-2
 I = 5*np.ones(T)
 I[0: 1000] = 0.0
 
-M = 20
+M = 60
 
-adj = ws(M, 4, 0.5)
+adj = ws(M, 10, .5)
 print("generation done")
 
 for i in range(M):
@@ -48,7 +48,7 @@ timeline = axt.axvline(0, color="r")
 # axanim.set_ylim(0,1)
 
 def update(i):
-    t = 2*i + 3300
+    t = 2*i + 1700
     scat.set_array(v[:, t])
     timeline.set_data([t,t], [0,1])
     print(i)
@@ -56,5 +56,5 @@ def update(i):
     return scat, timeline
 
 anim = FuncAnimation(fig, update, frames=500, interval=16)
-anim.save("anim2.mp4")
-# plt.show()
+# anim.save("anim3.mp4")
+plt.show()
