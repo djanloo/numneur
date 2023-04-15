@@ -143,7 +143,7 @@ def syn_izhikevich_RK(double [:] g, double [:] I,
   return np.array(v), np.array(u), firing_times
 
 
-def double_neuron(double [:] I1, double [:,:] g0,
+def neuronet(double [:] I1, double [:,:] g0,
                       double a=0.02, double b=0.2,double  c=-65.0, double d=6.0, double dt=0.001, 
                        Esyn=-80.0):
   cdef int T = len(I1), i, j, t, neuron_index
