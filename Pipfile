@@ -10,6 +10,9 @@ line-profiler = "==3.5.1"
 numpy = "*"
 matplotlib = "*"
 seaborn = "*"
+scipy = "*"
+scikit-network = "*"
+networkx = "*"
 
 [dev-packages]
 

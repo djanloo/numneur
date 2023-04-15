@@ -5,6 +5,7 @@ from os.path import dirname, join
 from line_profiler import LineProfiler
 from numneur import neur
 import numpy as np
+import matplotlib.pyplot as plt
 
 from rich import print
 
@@ -14,20 +15,21 @@ chdir(join(dirname(__file__), "numneur"))
 
 lp = LineProfiler()
 
-lp.add_function(neur.izhikevich_RK)
-wrap = lp(neur.izhikevich_RK)
+lp.add_function(neur.neuronet)
+wrap = lp(neur.neuronet)
 
-I = 10*np.ones(50_000)
-wrap(I)
+dt = 1e-2
+I = 10*np.ones(10_000)
+M = 20
+g0 = np.random.uniform(0,0.5, size=(M,M))
+bursting = dict(c=-55.0, d=4)
+
+
+
+v, f = wrap(I, g0, Esyn=0.0, dt=dt ,**bursting)
+
+for vv in v:
+    plt.plot(vv)
 
 lp.print_stats()
 
-lp = LineProfiler()
-
-lp.add_function(neur.izhikevich)
-wrap = lp(neur.izhikevich)
-
-I = 10*np.ones(500_000)
-wrap(I)
-
-lp.print_stats()
