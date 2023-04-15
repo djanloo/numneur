@@ -56,5 +56,5 @@ def update(i):
     return scat, timeline
 
 anim = FuncAnimation(fig, update, frames=500, interval=16)
-# anim.save("anim3.mp4")
-plt.show()
+anim.save("anim3.mp4")
+# plt.show()
