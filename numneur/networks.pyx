@@ -14,7 +14,7 @@ cdef int mod (int a, int b):
     return r
 
 def watts_strogatz(int N, int K, double beta):
-    # Dummy comment 3
+    """Watts-Strogatz small-world network generator."""
     cdef double [:,:] A = np.zeros((N,N))
     cdef int i, j, left, right, attempt, connection
     cdef bint connected = False
@@ -29,8 +29,7 @@ def watts_strogatz(int N, int K, double beta):
 
     for i in range(N):
         connected = False
-        # print("pre")
-        # print(np.array(A))
+
         if randzerone() < beta:
             while not connected:
                 connection = rand()%N
@@ -48,8 +47,40 @@ def watts_strogatz(int N, int K, double beta):
                     A[mod(i + K//2, N), mod(i + K//2, N)] -= 1
 
                     connected = True
-                    # print(f"connected {i} with {connection}, removed connection ({i}, {mod(i+K//2, N)})")
-            # print("post")
-            # print(np.array(A))
     
     return np.array(A)
+
+def parents_and_children(double [:,:] G):
+    cdef int N = len(G), i, j, n_parents, n_children
+
+    # Takes trace the max number of parents and children
+    # to return a memoryview (maxparents, maxchildren)
+    cdef int maxparents = -1, maxchildren = -1
+    cdef int [:,:] parents, children
+
+    for i in range(N):
+        n_parents, n_children = 0, 0
+        for j in range(N):
+            if G[i, j] != 0 and i != j:
+                n_children += 1
+            if G[j, i] != 0 and i != j:
+                n_parents += 1
+        maxchildren = n_children if n_children > maxchildren else maxchildren
+        maxparents = n_parents if n_parents > maxparents else maxparents
+    
+    parents  = -np.ones((N, maxparents),    dtype="intc")
+    children = -np.ones((N, maxchildren),   dtype="intc")
+        
+    for i in range(N):
+        n_parents, n_children = 0, 0
+        for j in range(N):
+
+            if G[i, j] != 0 and i != j:
+                children[i, n_children] = j
+                n_children += 1
+
+            if G[j, i] != 0 and i != j:
+                parents[i, n_parents] = j
+                n_parents += 1
+    
+    return parents, children

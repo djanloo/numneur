@@ -1,5 +1,6 @@
 import numpy as np
 
+from .networks import parents_and_children
 
 cdef mystic_function(v):
   """Directly from the article"""
@@ -160,6 +161,15 @@ def neuronet(double [:] I1, double [:,:] g0,
   cdef bint fired = False
   cdef list firing = []
 
+  cdef int[:,:] parents, children 
+  cdef int maxparents, maxchildren
+
+  parents, children = parents_and_children(g0)
+  
+  maxparents  = len(parents[0])
+  maxchildren = len(children[0])
+
+  # Initialization at reset potential
   for neuron_index in range(M):
     v[neuron_index, 0] = c
 
@@ -168,29 +178,41 @@ def neuronet(double [:] I1, double [:,:] g0,
     for neuron_index in range(M):
       fired = False
     
-      v[neuron_index, t+1] = v[neuron_index, t] + dt*( mystic_function(v[neuron_index, t]) - u[neuron_index ,t])
-      for j in range(M):
-        if j != neuron_index:
-          v[neuron_index, t+1] -= dt*g[j, neuron_index]*(v[neuron_index, t] - Esyn)
+      v[neuron_index, t+1] =  v[neuron_index, t] \
+                            + dt*( mystic_function(v[neuron_index, t])\
+                            - u[neuron_index ,t])
 
+      # Synaptic currents
+      for j in range(maxparents):
+        if parents[neuron_index, j] == -1:
+          break
+        v[neuron_index, t+1] -= dt*g[parents[neuron_index, j], neuron_index]*(v[neuron_index, t] - Esyn)
+
+      # External stimulus
       if neuron_index == 0:
         v[neuron_index, t+1] += dt*I1[t] 
 
-      u[neuron_index, t+1] = u[neuron_index, t] + a*dt*( b*v[neuron_index, t] - u[neuron_index, t])
+      # Recovery variable
+      u[neuron_index, t+1] =  u[neuron_index, t] \
+                            + a*dt*( b*v[neuron_index, t] - u[neuron_index, t])
 
+      ## FIRING
       if v[neuron_index, t+1] >= 30.0:
         v[neuron_index, t+1] = c 
         u[neuron_index, t+1] += d 
         firing.append([neuron_index, t])
-        fired = True
 
-      for j in range(M):
-        if j != neuron_index:
-          if fired:
-            # Increment connected neurons' synaptic conductances
-            g[neuron_index, j] += g0[neuron_index, j]
+        # Increment synaptic conductances of connected neurons
+        for j in range(maxchildren):
+          if children[neuron_index, j] == -1:
+            break
+          g[neuron_index, children[neuron_index, j]] += g0[neuron_index, children[neuron_index, j]]
 
-          # Decay of all connected synapses
-          g[neuron_index, j] -= dt*g[neuron_index, j]
+    # Decay of all synapses
+    for neuron_index in range(M):
+      for j in range(maxchildren):
+        if children[neuron_index, j] == -1:
+          break
+        g[neuron_index, children[neuron_index, j]] -= dt*g[neuron_index, children[neuron_index, j]]
       
   return np.array(v), firing
