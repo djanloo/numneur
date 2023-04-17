@@ -144,9 +144,9 @@ def syn_izhikevich_RK(double [:] g, double [:] I,
   return np.array(v), np.array(u), firing_times
 
 
-def neuronet(double [:] I1, double [:,:] g0,
-                      double a=0.02, double b=0.2,double  c=-65.0, double d=6.0, double dt=0.001, 
-                       Esyn=-80.0):
+def neuronet(double [:] I1, double [:,:] g0, double [:,:] Esyn,
+                      double a=0.02, double b=0.2,double  c=-65.0, double d=6.0, 
+                      double dt=0.001):
   cdef int T = len(I1), i, j, t, neuron_index
   cdef int M = len(g0)
 
@@ -174,6 +174,8 @@ def neuronet(double [:] I1, double [:,:] g0,
     v[neuron_index, 0] = c
 
   for t in range(T-1):
+    if  100*t % T == 0:
+      print("|", end="", flush=True)
 
     for neuron_index in range(M):
       fired = False
@@ -186,7 +188,7 @@ def neuronet(double [:] I1, double [:,:] g0,
       for j in range(maxparents):
         if parents[neuron_index, j] == -1:
           break
-        v[neuron_index, t+1] -= dt*g[parents[neuron_index, j], neuron_index]*(v[neuron_index, t] - Esyn)
+        v[neuron_index, t+1] -= dt*g[parents[neuron_index, j], neuron_index]*(v[neuron_index, t] - Esyn[parents[neuron_index, j], neuron_index])
 
       # External stimulus
       if neuron_index == 0:

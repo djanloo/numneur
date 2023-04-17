@@ -1,60 +1,127 @@
 import numpy as np
 from numneur.neur import neuronet
-from numneur.networks import watts_strogatz as ws, parents_and_childs
+from numneur.networks import directed_small_world as dsw
 import matplotlib.pyplot as plt
 import networkx as nx
+from matplotlib.animation import FuncAnimation
+from matplotlib import rcParams
+
 np.random.seed(42)
+rcParams["font.size"] = 9
+rcParams["font.family"] = "serif"
+fig = plt.figure(constrained_layout=True)
+axs = fig.subplot_mosaic([['graph',"info"],["V","V"], ["A", "A"]],
+                          gridspec_kw={'height_ratios':[1, .8, .5]}, 
+                          sharex=False)
+
 T = 10_000
-dt = 5e-2
+dt = 2e-2
+t = np.linspace(0, T*dt, T)
+print("max time:", T*dt)
 
-I = 20*np.ones(T)
-I[0: 1000] = 0.0
+I = 100*np.ones(T)
+I[0: 100] = 0.0
 
-M = 100
+M = 500
+conductance_weights = np.random.uniform(0.01, 1.0, size=(M,M))
+synaptic_potentials = np.random.uniform(0,1, size=(M,M))
+excit_inhib = 0.2
+excitatory = synaptic_potentials > excit_inhib
+inhibitory = synaptic_potentials <= excit_inhib
+synaptic_potentials[excitatory] = 0
+synaptic_potentials[inhibitory] = -90
 
-adj = ws(M, 6, .1)
+s_w_prob = 0.1
+forward_neighbors = 10
+adj = dsw(M, forward_neighbors, s_w_prob)
+
 
 for i in range(M):
     adj[i,i] = 0
-g0 = adj*np.random.uniform(0,.5, size=(M,M))
+
+synapses = adj > 0
+excitatory = excitatory & synapses
+inhibitory = inhibitory & synapses
+
+g0 = adj*conductance_weights
 print("generation done")
 
-graph = nx.Graph(adj)
+g0_inv = g0.copy()
+mask = (g0_inv == 0.0)
+g0_inv[mask] += 1
+g0_inv = 1.0/g0_inv
+g0_inv[mask] = 0.0
+
+graph = nx.Graph(g0_inv)
 pos = nx.spectral_layout(graph)
 pos_array = np.zeros((M,2))
 for n in pos.keys():
     pos_array[n] = pos[n]
 
+print("embedding done")
 
 bursting = dict(c=-55.0, d=4)
 chattering = dict(c=-50.0, d=2)
 accomodating = dict(a=0.02, b=1, c=-65, d=2)
 tonic = dict(a=0.02, b=0.2, c=-65, d=6)
 
-v, f = neuronet(I, g0, Esyn=0.0, dt=dt ,**tonic)
+v, f = neuronet(I, g0, Esyn=synaptic_potentials, dt=dt ,**tonic)
 print("simulation done")
 
-from matplotlib.animation import FuncAnimation
-fig, (axt, axanim) = plt.subplots(2, 1)
 
-for vv in v:
-    axt.plot(vv)
+# spiketimes, indexes = np.flip(f).T
+# axt.plot(spiketimes*dt, indexes, ls="", marker="|", color="k")
+tt, nn = np.meshgrid(t, np.arange(M))
 
-axt.plot(*np.flip(f).T, ls="", marker="|", color="k")
 
-nx.draw_networkx_edges(graph, pos, width=0.5)
+## Graph plot settings
+nx.draw_networkx_edges(graph, pos, width=0.5, ax=axs["graph"])
+scat = axs["graph"].scatter(*pos_array.T, c=np.zeros(len(g0)), s=20, vmin=-90, vmax=-30, cmap="plasma")
+axs["graph"].set_xlim(-1,1)
+axs["graph"].set_ylim(-1,1)
+axs["graph"].set_aspect("equal")
 
-scat = axanim.scatter(*pos_array.T, c=np.zeros(len(g0)), s=50, vmin=-90, vmax=-30, cmap="plasma")
-timeline = axt.axvline(0, color="r")
+## V plot
+timeline = axs["V"].axvline(0, color="r")
+axs["V"].matshow(v)
+axs["V"].set_ylim(-1, M+1)
+axs["V"].set_aspect("auto")
+axs["V"].set_ylabel("$V_i$")
+## Activity
+spikeindex, n_index = np.flip(f).T
+axs["A"].hist(spikeindex, histtype="step", color="k", bins=T//50)
+timeline2 = axs["A"].axvline(0, color="r")
+axs["A"].set_ylabel("PSTH")
 
+## infos
+axs["info"].annotate(f"neurons = {M}", (0,0.0))
+axs["info"].annotate(f"forward neighbors = {forward_neighbors}", (0,-.5))
+axs["info"].annotate(f"total synapses = {np.sum(synapses)} ( {np.sum(synapses)/(M**2 - M)*100:.1f}% connettivity)", (0, -1))
+axs["info"].annotate(f"inhibitory synapses = {np.sum(inhibitory)/np.sum(synapses)*100:.1f} %", (0,-1.5))
+axs["info"].annotate(f"small-world probability = {s_w_prob*100:.1f} %", (0,-2))
+
+axs["info"].set_ylim(-4, 1)
+axs["info"].set_xlim(0,3)
+axs["info"].axis("off")
+
+startframe = 1000
+frames = 1200
+speed = 5
+
+axs["V"].axvline(startframe, color="k")
+axs["V"].axvline(startframe + speed*frames, color="k")
 
 def update(i):
-    t = 2*i + 2600
-    scat.set_array(v[:, t])
-    timeline.set_data([t,t], [0,1])
-    # print(i)
-    return scat, timeline
+    tt = speed*i + startframe
+    scat.set_array(v[:, tt])
+    timeline.set_data([tt,tt], [0,1])
+    timeline2.set_data([tt,tt], [0,1])
 
-anim = FuncAnimation(fig, update, frames=600, interval=16, blit=True)
-# anim.save("anim5.mp4")
+    # lines.set_colors(np.random.uniform(0,1,size = (8,4)))
+    # cond_plot.set_data(G[tt])
+    print(f"{i/frames*100:.1f}", end=" ", flush=True)
+    return scat, timeline, timeline2
+
+anim = FuncAnimation(fig, update, frames=frames, interval=16, blit=True)
+# anim.save("dummy.mp4")
 plt.show()

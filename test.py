@@ -6,19 +6,22 @@ from matplotlib import rcParams
 rcParams["font.size"] = 9
 rcParams["font.family"] = "serif"
 
-fig = plt.figure(constrained_layout=True)
-axs = fig.subplot_mosaic([['V'],["u"], ["I"], ["g"]],
-                          gridspec_kw={'height_ratios':[3, 2, 1, 1]}, sharex=True)
-N = 50_000
-dt = 5e-3
-T = np.arange(N)
-t = np.arange(N)*dt
-
 # Parameters from  Izhikevich's article
 chattering = dict(c=-50.0, d=2)
 bursting =   dict(c=-55.0, d=4)
 accomodating = dict(a=0.02, b=1, c=-65, d=2)
 fede_dawn = dict(a=0.0, c=-50, d=0)
+
+fig = plt.figure(constrained_layout=True)
+axs = fig.subplot_mosaic([['V'],["u"], ["I"], ["g"]],
+                          gridspec_kw={'height_ratios':[3, 2, 1, 1]}, sharex=True)
+
+
+N = 50_000
+dt = 5e-3
+T = np.arange(N)
+t = np.arange(N)*dt
+
 
 # Injected current
 I = np.zeros(N)

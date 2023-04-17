@@ -34,7 +34,7 @@ def watts_strogatz(int N, int K, double beta):
             while not connected:
                 connection = rand()%N
 
-                if A[i, connection] == 0.0:
+                if connection != i and A[i, connection] == 0.0:
 
                     A[i, connection] = 1.0
                     A[connection,i] = 1.0
@@ -45,6 +45,35 @@ def watts_strogatz(int N, int K, double beta):
                     A[mod(i+K//2, N), i] = 0
 
                     A[mod(i + K//2, N), mod(i + K//2, N)] -= 1
+
+                    connected = True
+    
+    return np.array(A)
+
+def directed_small_world(int N, int K, double beta):
+    cdef double [:,:] A = np.zeros((N,N))
+    cdef int i, j, right, connection
+    cdef bint connected = False
+
+    for i in range(N):
+        for j in range(1, K):
+            right = mod(i+j, N)
+            A[i, right] = 1.0
+
+    for i in range(N):
+        connected = False
+
+        if randzerone() < beta:
+            while not connected:
+                connection = rand()%N
+
+                if connection!= i and A[i, connection] == 0.0:
+
+                    # connects to new point
+                    A[i, connection] = 1.0
+
+                    # deletes rightermost link
+                    A[i, mod(i + K-1, N)] = 0
 
                     connected = True
     
