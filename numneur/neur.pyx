@@ -144,10 +144,10 @@ def syn_izhikevich_RK(double [:] g, double [:] I,
   return np.array(v), np.array(u), firing_times
 
 
-def neuronet(double [:] I1, double [:,:] g0, double [:,:] Esyn,
+def neuronet(double [:] I, double [:,:] g0, double [:,:] Esyn,
                       double a=0.02, double b=0.2,double  c=-65.0, double d=6.0, 
-                      double dt=0.001):
-  cdef int T = len(I1), i, j, t, neuron_index
+                      double dt=0.001, injection_neuron=0):
+  cdef int T = len(I), i, j, t, neuron_index
   cdef int M = len(g0)
 
   cdef double [:,:] v = np.zeros((M, T))
@@ -191,8 +191,8 @@ def neuronet(double [:] I1, double [:,:] g0, double [:,:] Esyn,
         v[neuron_index, t+1] -= dt*g[parents[neuron_index, j], neuron_index]*(v[neuron_index, t] - Esyn[parents[neuron_index, j], neuron_index])
 
       # External stimulus
-      if neuron_index == 0:
-        v[neuron_index, t+1] += dt*I1[t] 
+      if neuron_index == injection_neuron:
+        v[neuron_index, t+1] += dt*I[t] 
 
       # Recovery variable
       u[neuron_index, t+1] =  u[neuron_index, t] \

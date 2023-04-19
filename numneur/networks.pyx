@@ -113,3 +113,64 @@ def parents_and_children(double [:,:] G):
                 n_parents += 1
     
     return parents, children
+
+def barabasi_albert(int N, int m0, double p0):
+
+    cdef int [:,:] G = np.zeros((N,N), dtype="intc")
+    cdef int Nlinks = 0
+    cdef int i, j, t
+    cdef list sectors = []
+    cdef double cumulant_sector = 0.0
+    # Initializes a m0-nodes random network 
+    for t in range(m0):
+        for j in range(t):
+            if t != j:
+                if randzerone() < p0:
+                    # Connects i to j and j to i
+                    G[t,j] = 1
+                    # G[j, t] = 1
+
+                    # Increments the degree of node i and node j
+                    G[t,t] += 1
+                    G[j,j] += 1
+
+                    # Increments number of links
+                    Nlinks += 2
+
+    for t in range(m0, N): # at each t a new node is generated
+
+        # Sectors of the line to samples, e.g.:
+        # if degrees are [1,1,2,1]
+        # then sectors are [1/5, 2/5, 4/5, 1]
+        # Sampling a random point on the (0,1) interval assigns the link 
+        # with probability equal to the length of the segment
+
+        sectors = []
+        cumulant_sector = 0.0
+
+        # print(t,Nlinks,  sectors)
+        # print(np.array(G))
+
+        for j in range(m0): # The linkage process is repeated m0 times
+
+            for i in range(t):
+                    cumulant_sector += G[i,i]/ (<int>Nlinks)
+                    sectors.append(cumulant_sector)
+            u = randzerone()
+            # print(f"Extracted {u:.2f}")
+            for i in range(t):
+                if sectors[i] > u:
+                    # print(f"selected sector {i}")
+                    G[t, i] = 1
+                    # G[i, t] = 1
+                    
+                    G[i, i] += 1
+                    G[t, t] += 1
+
+                    Nlinks += 2
+                    break
+        
+    return np.array(G)
+
+            
+
