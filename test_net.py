@@ -11,8 +11,8 @@ np.random.seed(42)
 rcParams["font.size"] = 9
 rcParams["font.family"] = "serif"
 fig = plt.figure(constrained_layout=True)
-axs = fig.subplot_mosaic([['graph',"info"],["V","V"], ["A", "A"]],
-                          gridspec_kw={'height_ratios':[1, .8, .5]}, 
+axs = fig.subplot_mosaic([['graph',"V"],["graph","A"], ["info", "info"]],
+                          gridspec_kw={'height_ratios':[2, 2, .5]}, 
                           sharex=False)
 # Neuron parameters
 bursting = dict(c=-55.0, d=4)
@@ -22,7 +22,7 @@ tonic = dict(a=0.02, b=0.2, c=-65, d=6)
 
 # Simulations parameters
 T = 10_000
-dt = 1e-2
+dt = 2e-2
 t = np.linspace(0, T*dt, T)
 print("max time:", T*dt)
 
@@ -30,10 +30,10 @@ print("max time:", T*dt)
 I = 50*np.ones(T)
 I[0: 10] = 0
 
-M = 100 #Number of neurons
+M = 500 #Number of neurons
 
 # Synaptic stuff
-conductance_weights = np.random.uniform(0.1, 1.0, size=(M,M))*5
+conductance_weights = np.random.uniform(0.1, 1.0, size=(M,M))*1
 synaptic_potentials = np.random.uniform(0,1, size=(M,M))
 excit_inhib = 0.2 # proportions of inhibitory/excitatory
 excitatory = synaptic_potentials > excit_inhib
@@ -43,8 +43,8 @@ synaptic_potentials[inhibitory] = -90
 
 # Small world network generation
 s_w_prob = 0.51# small-world probability
-forward_neighbors = 2
-adj = dsw(M, forward_neighbors, 0.5)# s_w_prob)
+forward_neighbors = 10
+adj = dsw(M, forward_neighbors, s_w_prob)# s_w_prob)
 
 # Set diagonal to zero in case they are not
 degree = adj.diagonal().copy()
@@ -70,7 +70,12 @@ g0_inv[mask] += 1
 g0_inv = 1.0/g0_inv
 g0_inv[mask] = 0.0
 
-print(g0_inv)
+g0_inv= (adj >0).astype(int)*1e-3
+
+# plt.figure(5)
+# plt.matshow(g0)
+# print(g0)
+# plt.show()
 # Graph plot
 graph = nx.Graph(split_nodes(g0_inv, 1))
 pos = nx.spring_layout(graph)
@@ -82,6 +87,7 @@ print("embedding done")
 
 # Simulate
 v, f = neuronet(I, g0, Esyn=synaptic_potentials, dt=dt ,injection_neuron=M-1,**tonic)
+print(v)
 print("simulation done")
 
 
@@ -91,8 +97,9 @@ print("simulation done")
 
 
 ## Graph plot settings
-nx.draw_networkx_edges(graph, pos, width=0.5, ax=axs["graph"])
-scat = axs["graph"].scatter(*pos_array.T, c=np.zeros(2*len(g0)), s=20, vmin=-90, vmax=-30, cmap="plasma")
+nx.draw_networkx_edges(graph, pos, width=0.1, ax=axs["graph"])
+scat = axs["graph"].scatter(*(pos_array[:M].T), c=np.zeros(len(g0)), s=50, vmin=-90, vmax=-30, cmap="plasma", alpha=1.0)
+scat2= axs["graph"].scatter(*(pos_array[M:].T), s=20, c=np.zeros((len(g0))), marker=">", alpha=0.6, cmap="Greys",vmin=-90, vmax=-30)
 # axs["graph"].set_xlim(-1,1)
 # axs["graph"].set_ylim(-1,1)
 axs["graph"].set_aspect("equal")
@@ -132,12 +139,13 @@ axs["V"].axvline(startframe + speed*frames, color="k")
 # exit()
 def update(i):
     tt = speed*i + startframe
-    scat.set_array(np.concatenate(( v[:, tt], v[:, tt -50])))
+    scat.set_array(v[:, tt])
+    scat2.set_array(v[:, tt-30])
     timeline.set_data([tt,tt], [0,1])
     timeline2.set_data([tt,tt], [0,1])
 
     print(f"{i/frames*100:.1f}", end=" ", flush=True)
-    return scat, timeline, timeline2
+    return scat, timeline, timeline2, scat2
 
 anim = FuncAnimation(fig, update, frames=frames, interval=16, blit=True)
 # anim.save("dummy.mp4")

@@ -114,7 +114,7 @@ def parents_and_children(double [:,:] G):
     
     return parents, children
 
-def barabasi_albert(int N, int m0, double p0):
+def barabasi_albert(int N, int m0, double p0, double p_periphery):
 
     cdef int [:,:] G = np.zeros((N,N), dtype="intc")
     cdef int Nlinks = 0
@@ -128,7 +128,7 @@ def barabasi_albert(int N, int m0, double p0):
                 if randzerone() < p0:
                     # Connects i to j and j to i
                     G[t,j] = 1
-                    # G[j, t] = 1
+                    G[j, t] = 1
 
                     # Increments the degree of node i and node j
                     G[t,t] += 1
@@ -169,8 +169,12 @@ def barabasi_albert(int N, int m0, double p0):
 
                     Nlinks += 2
                     break
-        
-    return np.array(G)
+        for i in range(N):
+            for j in range(i):
+                u = randzerone()
+                if u < 1e-2:
+                    G[i,j] = 1
+                    G[j,j] += 1
 
-            
+    return np.array(G)
 
