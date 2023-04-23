@@ -1,3 +1,6 @@
+"""Module for the analysis of molecular species.
+"""
+
 import cython
 import numpy as np
 from libc.math cimport log
@@ -11,10 +14,16 @@ cdef float randzerone():
   return rand()/ float(INT_MAX)
 
 def chemreact_from_string(string_in):
-    """A reaction has format
+    """From a string to a chemical reaction.
+    A reaction has format:
     
     [A] + [B] --> [C]       |k1|   #
     [C] + [D] --> [A] + [B] |k2|
+
+    Reverse reactions must be specified in different lines. Also,
+    stechiometric coefficients are not supported yet.
+
+    A reaction is simply a dictionary of reagents, products and a kinetic constant.
     """
     lines = string_in.split("#")
     species = set()
@@ -37,7 +46,7 @@ def chemreact_from_string(string_in):
     symbol_map = {molecule:i for i, molecule in enumerate(list(species))}
 
     for i,r in enumerate(reactions):
-        print(f"Reaction {i}: {'+'.join(r['reagents'])} --> {'+'.join(r['products'])} with k = {r['const']:.2f}")
+        print(f"Reaction {i}: {'+'.join(r['reagents']):10} --> {'+'.join(r['products']):10} with k = {r['const']:.2f}")
 
     # Converts symbols to integers
     for r in reactions:
@@ -47,18 +56,24 @@ def chemreact_from_string(string_in):
     return reactions, symbol_map
 
 
-def gillespie(str reactions_str, dict initial_state , N=1000):
+def gillespie(str reactions_str, dict initial_state , N=1000, V=10.0):
     """Gillespie SSA.
+    
+    Takes a string of reactions as in chemreact_from_string and a dictionary 
+    of initial state for each molecular species.
+
+    V is the volume, N the number of reactions to simulate (not the time).
+    Probably V is useless.
     """
     cdef int i, species, j
     cdef double [:] reaction_t = np.zeros(N)
 
+    # Gets the chemical reaction fro the string
     reactions, symbol_map = chemreact_from_string(reactions_str)
     n_species = len(symbol_map)
     n_reactions = len(reactions)
 
     cdef double [:,:] population = np.zeros((N, n_species)) 
-    cdef double V = 10.0
 
     # Set initial conditions
     for species_symb in initial_state.keys():
@@ -80,9 +95,6 @@ def gillespie(str reactions_str, dict initial_state , N=1000):
         a0 = np.sum(a)
 
         if a0 == 0.0:
-            for j in range(i,N):
-                for species in range(species):
-                    population[j,species] = population[j-1, species]
             print(f"Reagent exhaurited at step {i} over {N}")
             break
 
@@ -113,6 +125,7 @@ def gillespie(str reactions_str, dict initial_state , N=1000):
     ## Conversion to dictionary
     evolution = dict()
     for symbol in symbol_map.keys():
+        # If the reagents were finished, the i index is stopped at the last reaction
         evolution[symbol] = np.array(population[:i, symbol_map[symbol]])
 
     return np.array(reaction_t[:i]), evolution
