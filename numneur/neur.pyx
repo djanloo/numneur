@@ -1,5 +1,6 @@
 import numpy as np
 from .networks import parents_and_children
+from libc.math cimport tanh, cosh
 
 cdef mystic_function(v):
   """Directly from the article"""
@@ -79,3 +80,31 @@ def neuronet(double [:] I, double [:,:] g0, double [:,:] Esyn,
         g[neuron_index, children[neuron_index, j]] -= dt*g[neuron_index, children[neuron_index, j]]
       
   return np.array(v), firing
+
+def morris_lecar_oscillator(I,v0, n0, dt, 
+                            C = 0.1, v_1 = 0.1, v_2 = 0.1, v_3 = 0.1, v_4 = 0.1, phi = 0.1,
+                            g_l = 0.1, g_ca = 0.1, g_k = 0.1,
+                            v_l = 0.1, v_ca = 0.1, v_k = 0.1
+                            ):
+
+  cdef int i,j, N = len(I)
+
+  cdef double [:] v = np.zeros(N)
+  cdef double [:] n = np.zeros(N)
+
+  v[0] = v0
+  n[0] = n0
+
+  for i in range(N-1):
+    m_sat = 0.5*( 1 + tanh( (v[i] - v_1)/v_2    ))
+    n_sat = 0.5*( 1 + tanh( (v[i] - v_3)/v_4    ))
+    tau = 1.0 / ( phi*cosh( (v[i] - v_3)/(2*v_4)))
+
+    n[i+1] = n[i] + dt/tau*(n_sat - n[i])
+    v[i+1] = v[i] + dt/C*( I[i] - g_l*(v[i] - v_l) - g_ca*m_sat*(v[i] - v_ca) - g_k*n[i]*(v[i] - v_k))
+
+  return np.array(v), np.array(n)
+
+    
+
+
