@@ -1,4 +1,17 @@
 import numpy as np
+from libc.stdlib cimport rand
+
+cdef extern from "limits.h":
+    int INT_MAX
+
+cdef float randzerone():
+  return rand()/ float(INT_MAX)
+
+cdef int mod (int a, int b):
+    cdef int r = a % b
+    if r < 0:
+        r += b
+    return r
 
 
 def thresholded_OU(double [:] I, thr=1.0, reset=0.0, dt=1e-2, sigma=1.0, R=1.0, tau=1.0):
@@ -17,3 +30,18 @@ def thresholded_OU(double [:] I, thr=1.0, reset=0.0, dt=1e-2, sigma=1.0, R=1.0, 
             firing_times.append(i)
 
     return np.array(v), firing_times
+
+
+def poisson_process(nu, N, double dt):
+    cdef int i, interspike_counter
+    cdef int [:] P = np.zeros(N, dtype="intc")
+    cdef list interspike = []
+
+    interspike_counter = 0
+    for i in range(N):
+        interspike_counter += 1 
+        if randzerone() < nu*dt:
+            P[i] = 1
+            interspike.append(interspike_counter*dt)
+            interspike_counter = 0
+    return np.array(P), interspike
