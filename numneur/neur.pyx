@@ -1,7 +1,6 @@
 import numpy as np
 from .networks import parents_and_children
-from libc.math cimport tanh, cosh
-
+from numpy import tanh, cosh
 cdef mystic_function(v):
   """Directly from the article"""
   return 0.04*v*v + 5.0*v + 140.0
@@ -98,12 +97,13 @@ def morris_lecar_oscillator(I,v0, n0, dt,
   for i in range(N-1):
     m_sat = 0.5*( 1 + tanh( (v[i] - v_1)/v_2    ))
     n_sat = 0.5*( 1 + tanh( (v[i] - v_3)/v_4    ))
-    tau = 1.0 / ( phi*cosh( (v[i] - v_3)/(2*v_4)))
+    tau = 1.0 / ( cosh( (v[i] - v_3)/(2*v_4)))
 
-    n[i+1] = n[i] + dt/tau*(n_sat - n[i])
+    n[i+1] = n[i] + dt*phi/tau*(n_sat - n[i])
     v[i+1] = v[i] + dt/C*( I[i] - g_l*(v[i] - v_l) - g_ca*m_sat*(v[i] - v_ca) - g_k*n[i]*(v[i] - v_k))
 
   return np.array(v), np.array(n)
+
 
     
 
