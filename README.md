@@ -9,3 +9,7 @@ Stuff for Neural Dynamics
 Explicit Euler is roughly three times faster than RK4 and does not show great differences, apart from a slightly different timescale
 ![izi4](assets/izhi4.png)
 ![izi5](assets/izhi5.png)
+
+### Networks
+![net1](assets/slideshow.gif)
+![net1](assets/true_mid_connect_1.gif)
