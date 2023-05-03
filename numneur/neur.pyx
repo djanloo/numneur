@@ -1,6 +1,7 @@
 import numpy as np
 from .networks import parents_and_children
 from numpy import tanh, cosh
+
 cdef mystic_function(v):
   """Directly from the article"""
   return 0.04*v*v + 5.0*v + 140.0
@@ -103,6 +104,39 @@ def morris_lecar_oscillator(I,v0, n0, dt,
     v[i+1] = v[i] + dt/C*( I[i] - g_l*(v[i] - v_l) - g_ca*m_sat*(v[i] - v_ca) - g_k*n[i]*(v[i] - v_k))
 
   return np.array(v), np.array(n)
+
+def izhikevich(I, dt=1e-3, **neuron_kwargs):
+
+  # If a parameter is not specified takes the tonic neuron as a reference
+  tonic = dict(a=0.02, b=0.2, c=-65, d=6)
+  neuron_kwargs = tonic | neuron_kwargs
+
+  cdef int i, N = len(I)
+
+  # Assigns the parameters
+  cdef double a, b, c, d
+  a,b,c,d = map(neuron_kwargs.get, ["a", "b", "c", "d"])
+
+  cdef double [:] v = np.zeros(N), u = np.zeros(N)
+  cdef list firing_times = []
+
+  v[0] = c
+
+  for i in range(N-1):
+
+    # Updates
+    v[i+1] = v[i] + dt*(0.04*v[i]*v[i] + 5.0*v[i] + 140.0 - u[i] + I[i])
+    u[i+1] = u[i] + a*dt*( b*v[i] - u[i])
+
+    # Firing
+    if v[i+1] >= 30.0:
+      v[i+1] = c 
+      u[i+1] += d 
+      firing_times.append(i*dt)
+  
+  return np.array(v), np.array(u), firing_times
+
+
 
 
     
