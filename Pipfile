@@ -13,6 +13,8 @@ seaborn = "*"
 scipy = "*"
 scikit-network = "*"
 networkx = "*"
+pynn = "*"
+neuron = "*"
 
 [dev-packages]
 
