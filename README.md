@@ -1,12 +1,19 @@
 ## Numneur
-A low-level repo for neural dyamics simulation in Cython.
+A **low-level** repo for **neural dyamics** simulation in **Cython**.
 
 Mainly composed of 4 modules:
 
-- neur: simulation of dynamical systems (neurons, networks, 2D oscillators, etc.)
-- networks: build the abstract structure of the graph for networks (small-wold, Barabasi-Albert, etc.)
-- stochastic: some stuff for implementing stochastic processes (thresholded OU, Poisson)
-- chem: mainly Gillespie for ionic channel dynamics
+- `neur`: simulation of dynamical systems (neurons, networks, 2D oscillators, etc.)
+- `networks`: build the abstract structure of the graph for networks (small-wold, Barabasi-Albert, etc.)
+- `stochastic`: some stuff for implementing stochastic processes (thresholded OU, Poisson)
+- `chem`: mainly Gillespie for ionic channel dynamics
+
+Why not just use a simulator ?:
+
+- simulators, though easier to use and multi-platform comaptible, are slow due to the **high level** of structures
+- easier to define **non-standard models**
+- easier to follow **numerical subtleties**
+- more **fun**
 
 ## Compilation and suggested enviroment
 
