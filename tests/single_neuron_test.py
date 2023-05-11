@@ -1,3 +1,4 @@
+import import_context
 from numneur.neur import izhikevich as izhi
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,3 +1,4 @@
+import import_context
 import numpy as np
 import matplotlib.pyplot as plt
 from numneur.chem import gillespie

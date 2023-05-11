@@ -1,3 +1,4 @@
+import import_context
 from numneur.neur import morris_lecar_oscillator as ml
 import numpy as np
 import matplotlib.pyplot as plt

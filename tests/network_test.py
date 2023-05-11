@@ -1,3 +1,4 @@
+import import_context
 import numpy as np
 from numneur.neur import neuronet
 from numneur.networks import directed_small_world as dsw, barabasi_albert as ba
