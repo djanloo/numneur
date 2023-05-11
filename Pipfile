@@ -13,8 +13,6 @@ seaborn = "*"
 scipy = "*"
 scikit-network = "*"
 networkx = "*"
-neuron = "*"
-hbp-neuromorphic-platform = "*"
 
 [dev-packages]
 
