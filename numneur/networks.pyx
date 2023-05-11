@@ -1,3 +1,8 @@
+"""Module for the construction of networks.
+
+The most efficient way tested is the parent-children structure, 
+that takes advantages from sparsely connected networks.
+"""
 import numpy as np
 from libc.stdlib cimport rand
 
@@ -12,6 +17,46 @@ cdef int mod (int a, int b):
     if r < 0:
         r += b
     return r
+
+def parents_and_children(double [:,:] G):
+    """Utility to transform an adjacency matrix to a list of lists
+    sparse structure.
+
+    Memoryviews are currently used, but instances of python lists could be more efficient.
+    """
+    cdef int N = len(G), i, j, n_parents, n_children
+
+    # Takes trace the max number of parents and children
+    # to return a memoryview (maxparents, maxchildren)
+    cdef int maxparents = -1, maxchildren = -1
+    cdef int [:,:] parents, children
+
+    for i in range(N):
+        n_parents, n_children = 0, 0
+        for j in range(N):
+            if G[i, j] != 0 and i != j:
+                n_children += 1
+            if G[j, i] != 0 and i != j:
+                n_parents += 1
+        maxchildren = n_children if n_children > maxchildren else maxchildren
+        maxparents = n_parents if n_parents > maxparents else maxparents
+    
+    parents  = -np.ones((N, maxparents),    dtype="intc")
+    children = -np.ones((N, maxchildren),   dtype="intc")
+        
+    for i in range(N):
+        n_parents, n_children = 0, 0
+        for j in range(N):
+
+            if G[i, j] != 0 and i != j:
+                children[i, n_children] = j
+                n_children += 1
+
+            if G[j, i] != 0 and i != j:
+                parents[i, n_parents] = j
+                n_parents += 1
+    
+    return parents, children
 
 def watts_strogatz(int N, int K, double beta):
     """Watts-Strogatz small-world network generator."""
@@ -51,6 +96,7 @@ def watts_strogatz(int N, int K, double beta):
     return np.array(A)
 
 def directed_small_world(int N, int K, double beta):
+    """A test version of directed small-world netowork."""
     cdef double [:,:] A = np.zeros((N,N))
     cdef int i, j, right, connection
     cdef bint connected = False
@@ -79,43 +125,8 @@ def directed_small_world(int N, int K, double beta):
     
     return np.array(A)
 
-def parents_and_children(double [:,:] G):
-    cdef int N = len(G), i, j, n_parents, n_children
-
-    # Takes trace the max number of parents and children
-    # to return a memoryview (maxparents, maxchildren)
-    cdef int maxparents = -1, maxchildren = -1
-    cdef int [:,:] parents, children
-
-    for i in range(N):
-        n_parents, n_children = 0, 0
-        for j in range(N):
-            if G[i, j] != 0 and i != j:
-                n_children += 1
-            if G[j, i] != 0 and i != j:
-                n_parents += 1
-        maxchildren = n_children if n_children > maxchildren else maxchildren
-        maxparents = n_parents if n_parents > maxparents else maxparents
-    
-    parents  = -np.ones((N, maxparents),    dtype="intc")
-    children = -np.ones((N, maxchildren),   dtype="intc")
-        
-    for i in range(N):
-        n_parents, n_children = 0, 0
-        for j in range(N):
-
-            if G[i, j] != 0 and i != j:
-                children[i, n_children] = j
-                n_children += 1
-
-            if G[j, i] != 0 and i != j:
-                parents[i, n_parents] = j
-                n_parents += 1
-    
-    return parents, children
-
 def barabasi_albert(int N, int m0, double p0, double p_periphery):
-
+    """The aggregative scale-invariant network of Barabasi-Albert"""
     cdef int [:,:] G = np.zeros((N,N), dtype="intc")
     cdef int Nlinks = 0
     cdef int i, j, t

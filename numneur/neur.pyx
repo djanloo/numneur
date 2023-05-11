@@ -1,14 +1,22 @@
+"""Module for simulation of neurons and networks of neurons.
+
+Also, other dynamical models must be placed here (Morris-Lecar, Kuramoto).
+"""
 import numpy as np
 from .networks import parents_and_children
 from numpy import tanh, cosh
 
-cdef mystic_function(v):
+cdef Izk_pominomial(v):
   """Directly from the article"""
   return 0.04*v*v + 5.0*v + 140.0
 
 def neuronet(double [:] I, double [:,:] g0, double [:,:] Esyn,
                       double a=0.02, double b=0.2,double  c=-65.0, double d=6.0, 
                       double dt=0.001, injection_neuron=0):
+  """A network of IF neurons with exponential conductances.
+  
+
+  """
   cdef int T = len(I), i, j, t, neuron_index
   cdef int M = len(g0)
 
@@ -43,7 +51,7 @@ def neuronet(double [:] I, double [:,:] g0, double [:,:] Esyn,
       fired = False
     
       v[neuron_index, t+1] =  v[neuron_index, t] \
-                            + dt*( mystic_function(v[neuron_index, t])\
+                            + dt*( Izk_pominomial(v[neuron_index, t])\
                             - u[neuron_index ,t])
 
       # Synaptic currents
@@ -106,6 +114,7 @@ def morris_lecar_oscillator(I,v0, n0, dt,
   return np.array(v), np.array(n)
 
 def izhikevich(I, dt=1e-3, **neuron_kwargs):
+  """The single Ixhikevich neuron."""
 
   # If a parameter is not specified takes the tonic neuron as a reference
   tonic = dict(a=0.02, b=0.2, c=-65, d=6)

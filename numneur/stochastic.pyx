@@ -1,3 +1,5 @@
+"""Module for generation of stochastic processes.
+"""
 import numpy as np
 from libc.stdlib cimport rand
 

@@ -1,4 +1,7 @@
-"""Module for the analysis of molecular species.
+"""Module for the analysis of molecular dynamics.
+
+Here the channel opening can be simulated by Gillespie algorithm.
+Conductance of ionic channel not implemented yet, must be linked to neur.pyx module.
 """
 
 import cython
