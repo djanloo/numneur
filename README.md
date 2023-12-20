@@ -1,6 +1,6 @@
 ## Numneur
 A **low-level** repo for **neural dyamics** simulation in **Cython**.
-
+![net1](assets/true_mid_connect_1.gif)
 Mainly composed of 4 modules:
 
 - `neur`: simulation of dynamical systems (neurons, networks, 2D oscillators, etc.)
@@ -55,5 +55,3 @@ Explicit Euler is roughly three times faster than RK4 and does not show great di
 
 ### Networks
 ![net1](assets/slideshow.gif)
-
-![net1](assets/true_mid_connect_1.gif)
